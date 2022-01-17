@@ -43,6 +43,7 @@ jobs:
       - run:
           name: Build front-end
           command: |
+            #your code
             cd frontend
             npm install
             npm run build
@@ -61,6 +62,7 @@ jobs:
       - run:
           name: Back-end build
           command: |
+            #your code
             cd backend
             npm install
             npm run build
@@ -271,7 +273,10 @@ workflows:
   default:
     jobs:
       - build-frontend
+      
+
       - build-backend
+      
       - test-frontend:
           requires: [build-frontend]
       - test-backend:
