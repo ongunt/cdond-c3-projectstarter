@@ -45,7 +45,7 @@ jobs:
           command: |
             #your code
             cd frontend
-            npm install
+            npm i
             npm run build
 
       - save_cache:
@@ -64,7 +64,7 @@ jobs:
           command: |
             #your code
             cd backend
-            npm install
+            npm i
             npm run build
 
       - save_cache:
@@ -273,10 +273,7 @@ workflows:
   default:
     jobs:
       - build-frontend
-      
-
       - build-backend
-      
       - test-frontend:
           requires: [build-frontend]
       - test-backend:
