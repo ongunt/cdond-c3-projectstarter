@@ -12,7 +12,7 @@ commands:
           command: |
             # Your code here
             exit 1
-            
+
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -113,6 +113,9 @@ jobs:
   deploy-infrastructure:
     docker:
       # Docker image here that supports AWS CLI
+      - image: circleci/node:13.8.0      
+      
+
     steps:
       # Checkout code from git
       - run:
@@ -248,6 +251,8 @@ jobs:
 
   cloudfront-update:
     docker:
+       - image: circleci/node:13.8.0   
+
       # Docker image here that supports AWS CLI
     steps:
       # Checkout code from git
