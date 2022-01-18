@@ -34,25 +34,12 @@ commands:
               exit 1
             fi
         
-  big-fail:
-    description: "Failure Sequence on Failed Build, Test, or Analyze Steps"
-    parameters:
-      id:
-        type: string
-        default: << pipeline.id >>
-      pull-url:
-        type: string
-        default: << pipeline.project.git_url >>
-    steps:
-      - run:
-          name: Slack Failure Echo Message
-          command: |
-            echo "Pipeline ID Failure: << parameters.id >>"
-            echo "Git Pull URL Failure: << parameters.pull-url >>"
-          when: on_fail
-      - slack/notify:
-          event: fail
-          template: basic_fail_1       
+  commands:
+    notify_slack_error:
+      steps:
+        - slack/notify:
+            event: fail
+            template: basic_fail_1     
 jobs:
   build-frontend:
     docker:
@@ -69,7 +56,7 @@ jobs:
             npm install
             npm run build
             
-      - big-fail
+      - notify_slack_error
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -90,7 +77,7 @@ jobs:
             npm install
             npm run build
             
-      - big-fail
+      - notify_slack_error
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
@@ -114,7 +101,7 @@ jobs:
             cd frontend
             npm install
             npm run test
-      - big-fail       
+      - notify_slack_error       
   test-backend:
     docker:
       # Docker image here
@@ -133,7 +120,7 @@ jobs:
             cd backend
             npm install
             npm run test
-      - big-fail    
+      - notify_slack_error    
   scan-frontend:
     docker:
       # Docker image here
@@ -153,7 +140,7 @@ jobs:
             npm install
             # npm install oauth-sign@^0.9.0
             npm audit fix --audit-level=critical --force
-      - big-fail
+      - notify_slack_error
             
   scan-backend:
     docker:
@@ -174,7 +161,7 @@ jobs:
             npm install
             # npm install oauth-sign@^0.9.0
             npm audit fix --audit-level=critical --force
-      - big-fail
+      - notify_slack_error
   deploy-infrastructure:
     docker:
       # Docker image here that supports AWS CLI
@@ -360,27 +347,15 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend:
-          context: 
-              - slack-secret
-      - build-backend:
-          context: 
-              - slack-secret
+      - build-frontend
+      - build-backend
       - test-frontend:
-          context: 
-              - slack-secret
           requires: [build-frontend]
       - test-backend:
-          context: 
-              - slack-secret
           requires: [build-backend]
       - scan-backend:
-          context: 
-              - slack-secret
           requires: [build-backend]
       - scan-frontend:
-          context: 
-              - slack-secret
           requires: [build-frontend]
       - deploy-infrastructure:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
