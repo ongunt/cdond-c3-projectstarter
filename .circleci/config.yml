@@ -194,15 +194,16 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            echo [all] > inventory
+            echo [all] > .circleci/ansible/inventory.txt
             aws ec2 describe-instances \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:project,Values=udacity" \
-            --output text >> backend/inventory.txt
+            --filters "Name=tag:project,Values=udapeople" \
+            --output text >> .circleci/ansible/inventory.txt
+            cat .circleci/ansible/inventory.txt
       - persist_to_workspace:
-          root: backend
+          root: .circleci/
           paths:
-            - backend/inventory.txt
+            - ansible/inventory.txt
       # Here's where you will add some code to rollback on failure      
       - destroy-environment
   configure-infrastructure:
