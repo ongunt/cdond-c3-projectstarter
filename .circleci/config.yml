@@ -82,6 +82,12 @@ jobs:
       # Checkout code from git
       # Restore from cache
       # Your job code here
+      - run:
+          name: Front-end test
+          command: |
+            #your code
+            exit 1
+                  
                 
   test-backend:
     docker:
@@ -91,6 +97,11 @@ jobs:
       # Checkout code from git
       # Restore from cache
       # Your job code here
+      - run:
+          name: Back-end test
+          command: |
+            #your code
+            exit 1
             
   scan-frontend:
     docker:
@@ -100,7 +111,12 @@ jobs:
       # Checkout code from git
       # Restore from cache
       # Your job code here
-
+      - run:
+          name: Front-end scan
+          command: |
+            #your code
+            exit 1
+            
   scan-backend:
     docker:
       # Docker image here
@@ -109,7 +125,12 @@ jobs:
       # Checkout code from git
       # Restore from cache
       # Your job code here
-
+      - run:
+          name: Back-end scan
+          command: |
+            #your code
+            exit 1
+            
   deploy-infrastructure:
     docker:
       # Docker image here that supports AWS CLI
@@ -205,6 +226,7 @@ jobs:
           name: Deploy frontend objects
           command: |
             # your code here
+            exit 1
       # Here's where you will add some code to rollback on failure      
                     
   deploy-backend:
@@ -219,10 +241,12 @@ jobs:
           name: Install dependencies
           command: |
             # your code here
+            exit 1
       - run:
           name: Deploy backend
           command: |
             # your code here
+            exit 1
       # Here's where you will add some code to rollback on failure  
 
   smoke-test:
