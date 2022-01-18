@@ -8,11 +8,16 @@ commands:
       # Add parameter here   
     steps:
       - run:
-          name: Destroy environments
+          name: Destroy Backend environment
           when: on_fail
           command: |
-            # Your code here
-            exit 1
+            aws cloudformation delete-stack --stack-name udapeople-backend-fc99174
+      - run:
+          name: Destroy Frontend environment
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack --stack-name udapeople-frontend-fc99174
+
       
 
   revert-migrations:
@@ -165,9 +170,7 @@ jobs:
   deploy-infrastructure:
     docker:
       # Docker image here that supports AWS CLI
-      - image: circleci/node:13.8.0      
-      
-
+      - image: amazon/aws-cli     
     steps:
       # Checkout code from git
       - run:
