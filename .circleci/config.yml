@@ -46,9 +46,9 @@ jobs:
           command: |
             #your code
             cd frontend
-            npm i
+            npm install
             npm run build
-            exit 1
+            
 
       - save_cache:
           paths: [frontend/node_modules]
@@ -66,9 +66,9 @@ jobs:
           command: |
             #your code
             cd backend
-            npm i
+            npm install
             npm run build
-            exit 1
+            
 
       - save_cache:
           paths: [backend/node_modules]
