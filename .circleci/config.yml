@@ -13,7 +13,7 @@ commands:
           command: |
             # Your code here
             exit 1
-      - slack/status
+      
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -33,7 +33,7 @@ commands:
             #  Add revert code here. You can find this in the Getting Started section.
               exit 1
             fi
-      - slack/status   
+        
   big-fail:
     description: "Failure Sequence on Failed Build, Test, or Analyze Steps"
     parameters:
@@ -206,7 +206,7 @@ jobs:
           command: |
             # Your code here
             exit 1
-      - slack/status      
+           
       - persist_to_workspace:
           root: ~/
           paths:
