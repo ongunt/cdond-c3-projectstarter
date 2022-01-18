@@ -1,5 +1,6 @@
 version: 2.1
-
+orbs: 
+  slack: circleci/slack@4.6.0
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -12,7 +13,7 @@ commands:
           command: |
             # Your code here
             exit 1
-
+      - slack/status
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -32,7 +33,7 @@ commands:
             #  Add revert code here. You can find this in the Getting Started section.
               exit 1
             fi
-            
+      - slack/status      
 jobs:
   build-frontend:
     docker:
@@ -53,6 +54,7 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
+      - slack/status    
 
   build-backend:
     docker:
@@ -73,6 +75,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
+      - slack/status    
 
   test-frontend:
     docker:
@@ -92,7 +95,7 @@ jobs:
             cd frontend
             npm install
             npm run test
-              
+      - slack/status        
   test-backend:
     docker:
       # Docker image here
@@ -111,7 +114,7 @@ jobs:
             cd backend
             npm install
             npm run test
-            
+      - slack/status      
   scan-frontend:
     docker:
       # Docker image here
@@ -131,7 +134,7 @@ jobs:
             npm install
             # npm install oauth-sign@^0.9.0
             npm audit fix --audit-level=critical --force
-
+      - slack/status
             
   scan-backend:
     docker:
@@ -152,7 +155,7 @@ jobs:
             npm install
             # npm install oauth-sign@^0.9.0
             npm audit fix --audit-level=critical --force
-
+      - slack/status
   deploy-infrastructure:
     docker:
       # Docker image here that supports AWS CLI
@@ -184,6 +187,7 @@ jobs:
           command: |
             # Your code here
             exit 1
+      - slack/status      
       - persist_to_workspace:
           root: ~/
           paths:
@@ -209,7 +213,7 @@ jobs:
             # Your code here
             exit 1
       # Here's where you will add some code to rollback on failure      
-
+      - slack/status
   run-migrations:
     docker:
       # Docker image here that supports NodeJS
@@ -227,7 +231,7 @@ jobs:
             # Your code here
             exit 1
      # Here's where you will add some code to rollback on failure      
-
+      - slack/status
   deploy-frontend:
     docker:
       # Docker image here that supports AWS CLI
@@ -249,6 +253,7 @@ jobs:
           command: |
             # your code here
             exit 1
+      - slack/status      
       # Here's where you will add some code to rollback on failure      
                     
   deploy-backend:
@@ -270,7 +275,7 @@ jobs:
             # your code here
             exit 1
       # Here's where you will add some code to rollback on failure  
-
+      - slack/status
   smoke-test:
     docker:
       # Lightweight Docker image 
@@ -294,7 +299,7 @@ jobs:
           command: |
             # your code here
       # Here's where you will add some code to rollback on failure  
-
+      - slack/status
   cloudfront-update:
     docker:
        - image: circleci/node:13.8.0   
@@ -311,7 +316,7 @@ jobs:
           command: |
             # your code here
       # Here's where you will add some code to rollback on failure  
-
+      - slack/status
   cleanup:
     docker:
       # Docker image here
@@ -331,7 +336,7 @@ jobs:
             then
               # your code here
             fi
-            
+      - slack/status      
 
 workflows:
   default:
