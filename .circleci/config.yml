@@ -5,9 +5,7 @@ commands:
   destroy-environment:
     description: Destroy backend and frontend cloudformation stacks given a workflow ID.
     parameters:
-      # Add parameter here 
-      workflow_id:
-        type: string        
+      # Add parameter here       
     steps:
       - run:
           name: Destroy environments
@@ -271,7 +269,7 @@ jobs:
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}"
   # Here's where you will add some code to rollback on failure      
       - destroy-environment
-      - revert-migrations
+      
   deploy-frontend:
     docker:
       # Docker image here that supports AWS CLI
@@ -307,7 +305,8 @@ jobs:
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
            
       # Here's where you will add some code to rollback on failure      
-      - destroy-environment   
+      - destroy-environment
+      - revert-migration   
       
 
   deploy-backend:
@@ -366,6 +365,7 @@ jobs:
             ansible-playbook -i inventory.txt deploy-backend.yml
       # Here's where you will add some code to rollback on failure  
       - destroy-environment
+      - revert-migration 
   smoke-test:
     docker:
       # Lightweight Docker image 
