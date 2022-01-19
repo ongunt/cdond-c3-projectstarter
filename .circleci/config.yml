@@ -32,15 +32,20 @@ commands:
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
             SUCCESS=$(curl --insecure  https://kvdb.io/LeGgihuBux3kmgp2KTPkSn/migration_${CIRCLE_WORKFLOW_ID:0:7})
 
-            SUCCESS = 1
+            
             if(( $SUCCESS==1 )); 
             then
-            #  cd ~/project/backend
-            #  npm install
-            #  Add revert code here. You can find this in the Getting Started section.
-              exit 1
+              cd ~/project/backend
+              npm install
+            # Add revert code here. You can find this in the Getting Started section.
+              npm run migrations:revert
+              echo "revert migration done"
             fi
-        
+      - run:
+        when: on_fail
+        name: Prevents the workflow from continuing
+        command: |
+          circleci-agent step halt 
   
   notify_slack_error:
     steps:
