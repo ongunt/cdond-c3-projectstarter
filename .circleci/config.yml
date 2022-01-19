@@ -22,17 +22,16 @@ commands:
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
-    parameters:
-      # Add parameter here     
+    #parameters:
+     # Add parameter here     
     steps:
       - run:
           name: Revert migrations
           # Add when this will run
+          when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
             SUCCESS=$(curl --insecure  https://kvdb.io/LeGgihuBux3kmgp2KTPkSn/migration_${CIRCLE_WORKFLOW_ID:0:7})
-
-            
             if(( $SUCCESS==1 )); 
             then
               cd ~/project/backend
@@ -41,11 +40,7 @@ commands:
               npm run migrations:revert
               echo "revert migration done"
             fi
-      - run:
-        when: on_fail
-        name: Prevents the workflow from continuing
-        command: |
-          circleci-agent step halt 
+      
   
   notify_slack_error:
     steps:
