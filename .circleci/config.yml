@@ -234,7 +234,7 @@ jobs:
       # Here's where you will add some code to rollback on failure      
       - destroy-environment
   run-migrations:
-    executor: node
+    
     docker:
       # Docker image here that supports NodeJS
       - image: circleci/node:13.8.0
