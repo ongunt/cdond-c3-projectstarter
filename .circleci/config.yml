@@ -306,7 +306,7 @@ jobs:
            
       # Here's where you will add some code to rollback on failure      
       - destroy-environment
-      - revert-migration   
+      - revert-migrations  
       
 
   deploy-backend:
@@ -365,7 +365,7 @@ jobs:
             ansible-playbook -i inventory.txt deploy-backend.yml
       # Here's where you will add some code to rollback on failure  
       - destroy-environment
-      - revert-migration 
+      - revert-migrations
   smoke-test:
     docker:
       # Lightweight Docker image 
@@ -413,7 +413,7 @@ jobs:
             fi
       # Here's where you will add some code to rollback on failure  
       - destroy-environment
-      - revert-migration
+      - revert-migrations
   cloudfront-update:
     docker:
        - image: circleci/node:13.8.0   
