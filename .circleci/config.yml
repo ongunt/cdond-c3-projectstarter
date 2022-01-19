@@ -407,7 +407,7 @@ jobs:
             if curl -s ${URL} | grep "Welcome"
             then
                 # Change this to 0 after the job fails
-              return 1
+              return 0
             else
               return 1
             fi
@@ -416,21 +416,29 @@ jobs:
       - revert-migrations
   cloudfront-update:
     docker:
-       - image: circleci/node:13.8.0   
+       - image: amazon/aws-cli  
 
       # Docker image here that supports AWS CLI
     steps:
+      - checkout
       # Checkout code from git
       - run:
           name: Install dependencies
           command: |
             # your code here
+            yum -y install tar gzip
       - run:
           name: Update cloudfront distribution
           command: |
             # your code here
+            aws cloudformation deploy \
+            --template-file .circleci/files/cloudfront.yml \
+            --stack-name InitialStack \
+            --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --tags project=udapeople
       # Here's where you will add some code to rollback on failure  
-      
+      - destroy-environment
+      - revert-migrations      
   cleanup:
     docker:
       # Docker image here
