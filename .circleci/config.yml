@@ -179,15 +179,14 @@ jobs:
               --template-file .circleci/files/backend.yml \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
-              --tags project=udapeople
-      - run:
+              --tags project=udacity
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
-              --tags project=udapeople
+              --tags project=udacity
       - run:
           name: Add back-end ip to ansible inventory
           command: |
@@ -216,16 +215,36 @@ jobs:
             26:18:54:e8:c6:da:da:71:c8:1b:84:e5:34:0a:d6:b2
       # attach workspace
       - attach_workspace:
-          at: /tmp/ansible
+          at: /tmp/.circleci/ansible
       - run:
           name: Install dependencies
           command: |
             # Your code here
-            apk add openssh-client
+            apk add --no-cache \
+                python3 \
+                py3-pip \
+            && pip3 install --upgrade pip \
+            && pip3 install \
+                awscli \
+            && rm -rf /var/cache/apk/*
             apk add --update ansible
+            ansible-galaxy install weareinteractive.environment
+
       - run:
           name: Configure server
           command: |
+            echo ENVIROMENT=production > "backend/.env"
+            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
+            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
+            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
+            echo TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS >> "backend/.env"
+            echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> "backend/.env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+            cat backend/.env
+            ansible-galaxy install weareinteractive.environment
             ansible-playbook -i /tmp/ansible/inventory.txt .circleci/ansible/configure-server.yml
       
       # Here's where you will add some code to rollback on failure      
@@ -316,6 +335,8 @@ jobs:
       # Checkout code from git
       # Add ssh keys with fingerprint
       # attach workspace
+      - attach_workspace:
+          at: /tmp/.circleci/ansible
       - checkout
       - add_ssh_keys:
           fingerprints:
@@ -332,7 +353,7 @@ jobs:
             apk add --no-cache openssh-client
             pip3 install awscli
       
-      
+
       - run:
           name: Add env file
           command: |
@@ -347,6 +368,10 @@ jobs:
             echo "TYPEORM_DATABASE=${TYPEORM_DATABASE}" >> backend/.env
             echo "ENVIRONMENT: production" >> backend/.env
             cat backend/.env
+            ls -la
+            ansible-galaxy install weareinteractive.environment
+            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
+
       - run:
           name: zip backend
           command: |
@@ -378,6 +403,7 @@ jobs:
           name: Install dependencies
           command: |
             # your code here
+            apk add --update tar gzip 
             apk add --no-cache curl
             apk add --no-cache --upgrade bash
             apk add --no-cache --update ansible
@@ -386,7 +412,7 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
-            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
+            BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
             # your code here
