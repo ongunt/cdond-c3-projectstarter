@@ -335,6 +335,7 @@ jobs:
       - run:
           name: Add env file
           command: |
+            echo "TYPEORM_MIGRATIONS_DIR=${TYPEORM_MIGRATIONS_DIR}" >> backend/.env
             echo "TYPEORM_MIGRATIONS=${TYPEORM_MIGRATIONS}" >> backend/.env
             echo "TYPEORM_ENTITIES=${TYPEORM_ENTITIES}" >> backend/.env
             echo "TYPEORM_CONNECTION=${TYPEORM_CONNECTION}" >> backend/.env
@@ -344,6 +345,7 @@ jobs:
             echo "TYPEORM_PASSWORD=${TYPEORM_PASSWORD}" >> backend/.env
             echo "TYPEORM_DATABASE=${TYPEORM_DATABASE}" >> backend/.env
             echo "ENVIRONMENT: production" >> backend/.env
+            cat backend/.env
       - run:
           name: zip backend
           command: |
