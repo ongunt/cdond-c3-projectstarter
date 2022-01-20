@@ -333,18 +333,17 @@ jobs:
       # Docker image here that supports Ansible
       - image: python:3.7-alpine3.11
     steps:
+      - checkout
       # Checkout code from git
       # Add ssh keys with fingerprint
       # attach workspace
       - attach_workspace:
-          at: /tmp/.circleci/ansible
-      - checkout
+          at: .
+      
       - add_ssh_keys:
-          fingerprints:
-            26:18:54:e8:c6:da:da:71:c8:1b:84:e5:34:0a:d6:b2
+          fingerprints: ["26:18:54:e8:c6:da:da:71:c8:1b:84:e5:34:0a:d6:b2"]
       - run:
           name: Install dependencies
-
           command: |
             # your code here
             apk add --no-cache curl
@@ -353,8 +352,6 @@ jobs:
             apk add --no-cache --update ansible
             apk add --no-cache openssh-client
             pip3 install awscli
-      
-
       - run:
           name: Add env file
           command: |
@@ -369,10 +366,6 @@ jobs:
             echo "TYPEORM_DATABASE=${TYPEORM_DATABASE}" >> backend/.env
             echo "ENVIRONMENT: production" >> backend/.env
             cat backend/.env
-            ls -la
-            ansible-galaxy install weareinteractive.environment
-            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
-
       - run:
           name: zip backend
           command: |
@@ -400,6 +393,7 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       # Checkout code from git
+      - checkout
       - run:
           name: Install dependencies
           command: |
