@@ -246,7 +246,7 @@ jobs:
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             cat backend/.env
             ansible-galaxy install weareinteractive.environment
-            ansible-playbook -i /tmp/ansible/inventory.txt .circleci/ansible/configure-server.yml
+            ansible-playbook -i /tmp/ansible/inventory.txt .circleci/ansible/configure-server.yml --key-file "~/udacity.pem"
       
       # Here's where you will add some code to rollback on failure      
       - destroy-environment
@@ -383,7 +383,7 @@ jobs:
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml
+            ansible-playbook -i inventory.txt deploy-backend.yml --key-file "~/udacity.pem"
       # Here's where you will add some code to rollback on failure  
       - destroy-environment
       - revert-migrations
@@ -416,7 +416,7 @@ jobs:
                 return 0
             else
                 return 1
-            fi
+            
       - run:
           name: Frontend smoke test.
           command: |
