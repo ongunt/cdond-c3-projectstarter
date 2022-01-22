@@ -247,7 +247,7 @@ jobs:
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             cat backend/.env
             ansible-galaxy install weareinteractive.environment
-            ansible-playbook -i /tmp/ansible/inventory.txt .circleci/ansible/configure-server.yml --key-file "~/udacity.pem"
+            ansible-playbook -i inventory.txt configure-server.yml --key-file "~/udacity.pem"
       
   run-migrations: 
     docker:
