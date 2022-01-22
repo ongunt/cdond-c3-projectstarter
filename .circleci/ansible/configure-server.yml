@@ -39,4 +39,4 @@
     # Your code here
     - configure-server
     - configure-prometheus-node-exporter
-    - weareinteractive.environment
+    
