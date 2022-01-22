@@ -217,21 +217,42 @@ jobs:
             26:18:54:e8:c6:da:da:71:c8:1b:84:e5:34:0a:d6:b2
       # attach workspace
       - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: "Move Workspace Over"
-          command: mv /tmp/workspace .
+          at: ~/
       - run:
           name: Install dependencies
           command: |
-            # install the dependencies needed for your playbook
-            apk add --update tar gzip ansible awscli
+            # Your code here
+            apk update
+            apk upgrade
+            apk add unzip 
+            apk add curl
+            /usr/local/bin/python -m pip install --upgrade pip                    
+      - run:
+          name: Install ansible
+          command: |
+            # your code here              
+            apk add --update ansible 
+            ansible --version
+      - run:
+          name: Install aws
+          command: |
+            # your code here                           
+            pip install awscli --upgrade   
+            aws --version       
       - run:
           name: Configure server
           command: |
-            cd .circleci/ansible
+            # Your code here 
+            cd .circleci/ansible/ 
             ansible-playbook -i inventory.txt configure-server.yml
-
+          environment:
+            ANSIBLE_HOST_KEY_CHECKING: false
+      
+      - run:
+          name: Install node_exporter
+          command: |
+            cd .circleci/ansible/
+            ansible-playbook -i inventory.txt add-node-exporter.yml
   run-migrations: 
     docker:
       # Docker image here that supports NodeJS
