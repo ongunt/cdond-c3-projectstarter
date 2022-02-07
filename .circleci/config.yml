@@ -246,14 +246,7 @@ jobs:
             ansible-playbook -i inventory.txt configure-server.yml  --key-file "~/udacity.pem"
           environment:
             ANSIBLE_HOST_KEY_CHECKING: false
-      
-      - run:
-          name: Install node_exporter
-          command: |
-            cd .circleci/ansible/
-            ansible-playbook -i inventory.txt add-node-exporter.yml  --key-file "~/udacity.pem"
-          environment:
-            ANSIBLE_HOST_KEY_CHECKING: false  
+       
   run-migrations: 
     docker:
       # Docker image here that supports NodeJS
