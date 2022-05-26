@@ -44,4 +44,5 @@
   shell: |
     cd ~/backend
     npm i
+    npm audit fix
     pm2 start npm -- run start

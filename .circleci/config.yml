@@ -162,7 +162,7 @@ jobs:
             #your code
             cd backend
             npm install
-            npm install oauth-sign@^0.9.0
+            # npm install oauth-sign@^0.9.0
             # npm audit fix --audit-level=critical --force
             npm audit fix
       - notify_slack_error
