@@ -142,7 +142,8 @@ jobs:
             npm install
             # npm install oauth-sign@^0.9.0
             #npm audit fix --audit-level=critical --force
-            npm audit fix
+            #npm audit fix
+            npm audit fix --audit-level=critical 
       - notify_slack_error
             
   scan-backend:
@@ -164,7 +165,7 @@ jobs:
             npm install
             # npm install oauth-sign@^0.9.0
             # npm audit fix --audit-level=critical --force
-            npm audit fix
+            npm audit fix --audit-level=critical
       - notify_slack_error
   deploy-infrastructure:
     docker:
@@ -402,6 +403,8 @@ jobs:
             cd .circleci/ansible
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml --key-file "~/udacity.pem"
+          environment:
+            ANSIBLE_HOST_KEY_CHECKING: false  
       # Here's where you will add some code to rollback on failure  
       - destroy-environment
       - revert-migrations
