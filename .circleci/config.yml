@@ -234,7 +234,9 @@ jobs:
       - run:
           name: Install ansible
           command: |
-            # your code here              
+            # your code here              --key-file "~/udacity.pem"
+          environment:
+            ANSIBLE_HOST_KEY_CHECKING: false    
             apk add --update ansible 
             ansible --version
       - run:
@@ -402,9 +404,7 @@ jobs:
             echo "Contents  of the inventory.txt file is -------"
             cd .circleci/ansible
             cat inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml  --key-file "~/udacity.pem"
-          environment:
-            ANSIBLE_HOST_KEY_CHECKING: false  
+            ansible-playbook -i inventory.txt deploy-backend.yml
       # Here's where you will add some code to rollback on failure  
       - destroy-environment
       - revert-migrations
