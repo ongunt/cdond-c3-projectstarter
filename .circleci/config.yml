@@ -331,10 +331,10 @@ jobs:
           command: |
             # your code here
             cd frontend
-            npm install
-            
+            npm install           
             # npm install oauth-sign@^0.9.0
-            npm audit fix --audit-level=critical --force
+            # npm audit fix --audit-level=critical --force
+            npm audit fix
             npm run build
             ls -l
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
@@ -372,7 +372,8 @@ jobs:
             cd backend
             npm install
             # npm install oauth-sign@^0.9.0
-            npm audit fix --audit-level=critical --force
+            #npm audit fix --audit-level=critical --force
+            npm audit fix
             npm run build
       - run:
           name: setting the environment
