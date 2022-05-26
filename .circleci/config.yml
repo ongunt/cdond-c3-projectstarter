@@ -281,7 +281,11 @@ jobs:
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> .env
             ls -l
           
+            
             npm install
+            # npm install oauth-sign@^0.9.0
+            ##alttakini commentle
+            npm audit fix --audit-level=critical --force
             npm run build
             npm run migrations:revert
             npm run migrations > migrations_dump.txt
@@ -328,6 +332,9 @@ jobs:
             # your code here
             cd frontend
             npm install
+            
+            # npm install oauth-sign@^0.9.0
+            npm audit fix --audit-level=critical --force
             npm run build
             ls -l
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
@@ -363,7 +370,9 @@ jobs:
           name: Build Backend
           command: |
             cd backend
-            npm i
+            npm install
+            # npm install oauth-sign@^0.9.0
+            npm audit fix --audit-level=critical --force
             npm run build
       - run:
           name: setting the environment
