@@ -234,9 +234,7 @@ jobs:
       - run:
           name: Install ansible
           command: |
-            # your code here              --key-file "~/udacity.pem"
-          environment:
-            ANSIBLE_HOST_KEY_CHECKING: false    
+            # your code here              
             apk add --update ansible 
             ansible --version
       - run:
