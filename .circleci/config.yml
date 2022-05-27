@@ -141,9 +141,9 @@ jobs:
             cd frontend
             npm install
             # npm install oauth-sign@^0.9.0
-            #npm audit fix --audit-level=critical --force
+            npm audit fix --audit-level=critical --force
             #npm audit fix
-            npm audit fix --audit-level=critical 
+            #npm audit fix --audit-level=critical 
       - notify_slack_error
             
   scan-backend:
@@ -164,8 +164,8 @@ jobs:
             cd backend
             npm install
             # npm install oauth-sign@^0.9.0
-            # npm audit fix --audit-level=critical --force
-            npm audit fix --audit-level=critical
+            npm audit fix --audit-level=critical --force
+            #npm audit fix --audit-level=critical
       - notify_slack_error
   deploy-infrastructure:
     docker:
@@ -448,7 +448,6 @@ jobs:
             else
               return 1
             fi
-
       # Here's where you will add some code to rollback on failure  
       - destroy-environment
       - revert-migrations
