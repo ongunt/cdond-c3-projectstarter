@@ -304,7 +304,7 @@ jobs:
           command: |
             yum install -y tar gzip unzip      
       - run:
-          name: Install awscli and update
+          name: Install dependencies
           command: |
             apt-get update && sudo apt-get install -yy less
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -321,18 +321,13 @@ jobs:
             ls -la
             cat frontend/.env
       - run:
-          name: install nodejs
+          name: Deploy frontend objects
           command: |
             # your code here
             cd frontend
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
             # npm install oauth-sign@^0.9.0
-      - run:
-          name: deploy frontend zip and build
-          command: |
-            # your code here
-            cd frontend
             npm install -g npm
             npm install oauth2
             npm install webpack
@@ -374,7 +369,20 @@ jobs:
               # npm install oauth-sign@^0.9.0
               #npm audit fix --audit-level=critical --force
               #npm audit fix
-
+        - run:
+            name: setting the environment
+            working_directory: ./backend
+            command: |
+              pwd
+              echo > ".env"
+              echo ENVIRONMENT=production > .env
+              echo TYPEORM_CONNECTION=postgres >> .env
+              echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> .env
+              echo TYPEORM_HOST=$TYPEORM_HOST >> .env
+              echo TYPEORM_PORT=$TYPEORM_PORT >> .env
+              echo TYPEORM_USERNAME= $TYPEORM_USERNAME >> .env
+              echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> .env
+              echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> .env
         - run:
             name: build backend
             command: |      
@@ -404,7 +412,9 @@ jobs:
               # your code here
               sudo apt update
               sudo apt upgrade -y
-              sudo apt install -y curl awscli
+              sudo apt install -y curl
+              sudo apt install -y awscli
+
         - run:
             name: Backend smoke test.
             command: |
