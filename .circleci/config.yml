@@ -210,6 +210,7 @@ jobs:
           root: .
           paths:
             - ./.circleci/ansible/inventory.txt 
+      - notify_slack_error
       - destroy-environment 
  
 
@@ -233,7 +234,7 @@ jobs:
           command: |
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml --key-file "~/udacity.pem"
-
+      - notify_slack_error
       - destroy-environment
   
   
@@ -288,12 +289,15 @@ jobs:
             fi
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}"
   # Here's where you will add some code to rollback on failure      
+      - notify_slack_error
       - destroy-environment
       
   deploy-frontend:
     docker:
+     # Docker image here that supports AWS CLI
       - image: amazon/aws-cli
     steps:
+      # Checkout code from git
       - checkout
       - run:
           name: Install tar/gzip utility
@@ -315,19 +319,26 @@ jobs:
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
+            ls -la
             cat frontend/.env
       - run:
           name: Deploy frontend objects
           command: |
+            # your code here
             cd frontend
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
+            # npm install oauth-sign@^0.9.0
             npm install -g npm
             npm install oauth2
             npm install webpack
             npm run build
+            ls -l
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            ls -l
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+      # Here's where you will add some code to rollback on failure      
+      - notify_slack_error
       - destroy-environment
       - revert-migrations
 
@@ -336,34 +347,36 @@ jobs:
         - image: python:3.7-alpine3.11
       steps:
         - checkout
+        # Checkout code from git
+        # Add ssh keys with fingerprint
+        # attach workspace
         - add_ssh_keys:
             fingerprints: ["30:09:18:55:20:70:03:f7:93:71:6c:4b:38:52:8f:61"]
-            #fingerprints: ["33:e8:e6:2b:6f:ec:39:36:4d:3d:62:ce:2c:97:36:48"]
+
         - attach_workspace:
             at: .
         - run:
             name: Install dependencies
             command: |
               apk add --update ansible curl rsync openssh nodejs npm
-              ansible --version
               pip install awscli
-              aws --version
+  
         - run:
             name: build backend
             command: |
               cd backend
               npm i
               npm run build
-              #cp package* ./dist
-              #cd ..
+              # npm install oauth-sign@^0.9.0
+              #npm audit fix --audit-level=critical --force
+              #npm audit fix
+
         - run:
             name: build backend
             command: |      
               # Zip the directory
               tar -C backend -czvf artifact.tar.gz .
-              #mkdir .circleci/ansible/roles/deploy/files
-              #mv artifact.tar.gz .circleci/ansible/roles/deploy/files
-              
+      #
         - run: 
             name: deploy backend
             command: |      
@@ -373,6 +386,7 @@ jobs:
               ansible-playbook -i inventory.txt deploy-backend.yml  
             environment:
               ANSIBLE_HOST_KEY_CHECKING: false      
+        - notify_slack_error
         - destroy-environment
         - revert-migrations
   smoke-test:
@@ -387,7 +401,7 @@ jobs:
               sudo apt upgrade -y
               sudo apt install -y curl
               sudo apt install -y awscli
-              aws --version
+
         - run:
             name: Backend smoke test.
             command: |
@@ -399,10 +413,8 @@ jobs:
               echo "API_URL = ${API_URL}"
               if curl "${API_URL}/api/status" | grep "ok"
               then
-                echo SUCCESS
                 exit 0
               else
-                echo FAIL
                 exit 1
               fi
         - run:
@@ -416,6 +428,7 @@ jobs:
               else
                 exit 1
               fi
+        - notify_slack_error
         - destroy-environment
         - revert-migrations
 
