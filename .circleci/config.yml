@@ -167,91 +167,76 @@ jobs:
             #npm audit fix --audit-level=critical --force
             npm audit fix --audit-level=critical
       - notify_slack_error
+  
+  
   deploy-infrastructure:
     docker:
-      # Docker image here that supports AWS CLI
-      - image: amazon/aws-cli     
+      - image: amazon/aws-cli
     steps:
       - checkout
-      # Checkout code from git
-      - run: yum install -y tar gzip
+      - run:
+          name: Install Dependencies
+          command: |
+            cat .circleci/ansible/inventory.txt
+            ls ~/project/.circleci/ansible/
+            cat ~/project/.circleci/ansible/inventory.txt
+            yum -y install tar gzip jq npm
       - run:
           name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
+              --tags project=udapeople \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
-              --tags project=udapeople
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
       - run:
-          name: Ensure front-end infrastructure exist    
+          name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
+              --tags project=udapeople \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
-              --tags project=udapeople
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"              
       - run:
           name: Add back-end ip to ansible inventory
+          working_directory: ./.circleci/ansible
           command: |
-            
+            echo [web] > inventory.txt
             aws ec2 describe-instances \
-            --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:project,Values=udapeople" \
-            --output text >> .circleci/ansible/inventory.txt
-            #cat .circleci/ansible/inventory.txt
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text >> inventory.txt
       - persist_to_workspace:
-          root: ~/
+          root: .
           paths:
-            - project/.circleci/ansible/inventory.txt
-            - backend/
-      # Here's where you will add some code to rollback on failure      
-      #- destroy-environment
+            - ./.circleci/ansible/inventory.txt 
+      - destroy-environment 
+ 
+
   configure-infrastructure:
     docker:
-      # Docker image here that supports Ansible
       - image: python:3.7-alpine3.11
     steps:
-      # Checkout code from git
       - checkout
-      # Add ssh keys with fingerprint
+      - attach_workspace:
+          at: .
       - add_ssh_keys:
-          #fingerprints: ["7e:93:0b:a2:44:d5:fe:c5:2a:84:e7:51:59:e4:d7:d6"]                          
           fingerprints: ["30:09:18:55:20:70:03:f7:93:71:6c:4b:38:52:8f:61"]                          
-
-      # attach workspace
-#      - attach_workspace:
-#          at: ~/
+          #fingerprints: ["33:e8:e6:2b:6f:ec:39:36:4d:3d:62:ce:2c:97:36:48"]
       - run:
           name: Install dependencies
           command: |
-            # Your code here
-            apk update
-            apk upgrade
-            apk add unzip 
-            apk add curl
-            /usr/local/bin/python -m pip install --upgrade pip                    
+            apk add --update tar gzip ansible nodejs npm curl 
+            pip install awscli
       - run:
-          name: Install ansible
+          name: Run Playbook and Configure server
           command: |
-            # your code here              
-            apk add --update ansible 
-            ansible --version
-      - run:
-          name: Install aws
-          command: |
-            # your code here                           
-            pip install awscli --upgrade   
-            aws --version       
-      - run:
-          name: Configure server
-          command: |
-            # Your code here 
-            cd .circleci/ansible/ 
-            ansible-playbook -i inventory.txt configure-server.yml  --key-file "~/udacity.pem"
-          environment:
-            ANSIBLE_HOST_KEY_CHECKING: false
-       
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt configure-server.yml
+      - destroy-environment
+  
+  
+
   run-migrations: 
     docker:
       # Docker image here that supports NodeJS
