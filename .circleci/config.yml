@@ -321,16 +321,21 @@ jobs:
             ls -la
             cat frontend/.env
       - run:
-          name: Deploy frontend objects
+          name: install nodejs
           command: |
             # your code here
             cd frontend
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
+       - run:
+          name: build and deploy frontend 
+          command: |
+            # your code here
+            cd frontend           
+            
             # npm install oauth-sign@^0.9.0
             npm install -g npm
-            npm install oauth2
-            npm install webpack
+            npm install oauth2 webpack
             npm run build
             ls -l
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
@@ -412,8 +417,8 @@ jobs:
               # your code here
               sudo apt update
               sudo apt upgrade -y
-              sudo apt install -y curl
-              sudo apt install -y awscli
+              sudo apt install -y curl awscli
+              
 
         - run:
             name: Backend smoke test.
