@@ -141,9 +141,9 @@ jobs:
             cd frontend
             npm install
             # npm install oauth-sign@^0.9.0
-            npm audit fix --audit-level=critical --force
+            #npm audit fix --audit-level=critical --force
             #npm audit fix
-            #npm audit fix --audit-level=critical 
+            npm audit fix --audit-level=critical 
       - notify_slack_error
             
   scan-backend:
@@ -164,8 +164,8 @@ jobs:
             cd backend
             npm install
             # npm install oauth-sign@^0.9.0
-            npm audit fix --audit-level=critical --force
-            #npm audit fix --audit-level=critical
+            #npm audit fix --audit-level=critical --force
+            npm audit fix --audit-level=critical
       - notify_slack_error
   deploy-infrastructure:
     docker:
@@ -306,106 +306,81 @@ jobs:
       
   deploy-frontend:
     docker:
-      # Docker image here that supports AWS CLI
-      - image: python:3.7-alpine3.11
+      - image: amazon/aws-cli
     steps:
-      # Checkout code from git
       - checkout
+      - run:
+          name: Install tar/gzip utility
+          command: |
+            yum install -y tar gzip
+            yum install -y unzip      
       - run:
           name: Install dependencies
           command: |
-            # your code here
-            apk add --update ansible tar gzip ansible nodejs npm curl
-            pip install awscli
+            apt-get update && sudo apt-get install -yy less
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
       - run:
           name: Get backend url
+          workding_directory: ./frontend
           command: |
-            # your code here
-            export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=tag:project,Values=udapeople" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
+            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
-            ls -la
             cat frontend/.env
       - run:
           name: Deploy frontend objects
           command: |
-            # your code here
             cd frontend
-            npm install           
-            # npm install oauth-sign@^0.9.0
-            npm audit fix --audit-level=critical --force
-            npm audit fix
+            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
+            yum -y install nodejs
+            npm install -g npm
+            npm install oauth2
+            npm install webpack
             npm run build
-            ls -l
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-            ls -l
-            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive     
-      # Here's where you will add some code to rollback on failure      
-      - destroy-environment
-      - revert-migrations  
-
-  deploy-backend:
-    docker:
-      # Docker image here that supports Ansible
-      - image: python:3.7-alpine3.11
-    steps:
-      - checkout
-      # Checkout code from git
-      # Add ssh keys with fingerprint
-      # attach workspace
-      - attach_workspace:
-          at: ~/
-      - add_ssh_keys:
-          #fingerprints: ["7e:93:0b:a2:44:d5:fe:c5:2a:84:e7:51:59:e4:d7:d6"]
-          fingerprints: ["30:09:18:55:20:70:03:f7:93:71:6c:4b:38:52:8f:61"]
-      
-      - run:
-          name: Install dependencies
-          command: |
-            # your code here
-            apk add --update ansible tar gzip ansible nodejs npm curl
-            pip install awscli
-      - run:
-          name: Build Backend
-          command: |
-            cd backend
-            npm install
-            # npm install oauth-sign@^0.9.0
-            #npm audit fix --audit-level=critical --force
-            #npm audit fix
-            npm run build
-      - run:
-          name: setting the environment
-          working_directory: ./backend
-          command: |
-            pwd
-            echo > ".env"
-            echo ENVIRONMENT=production > .env
-            echo TYPEORM_CONNECTION=postgres >> .env
-            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> .env
-            echo TYPEORM_HOST=$TYPEORM_HOST >> .env
-            echo TYPEORM_PORT=$TYPEORM_PORT >> .env
-            echo TYPEORM_USERNAME= $TYPEORM_USERNAME >> .env
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> .env
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> .env
-
-      - run:
-          name: tar archive directory
-          command: |
-            ls -l
-            tar -C backend -czvf artifact.tar.gz .
-            ls -l
-      - run:
-          name: Deploy backend
-          command: |
-            echo "Contents  of the inventory.txt file is -------"
-            cd .circleci/ansible
-            cat inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml
-      # Here's where you will add some code to rollback on failure  
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       - destroy-environment
       - revert-migrations
+
+  deploy-backend:
+      docker:
+        - image: python:3.7-alpine3.11
+      steps:
+        - checkout
+        - add_ssh_keys:
+            fingerprints: ["30:09:18:55:20:70:03:f7:93:71:6c:4b:38:52:8f:61"]
+            #fingerprints: ["33:e8:e6:2b:6f:ec:39:36:4d:3d:62:ce:2c:97:36:48"]
+        - attach_workspace:
+            at: .
+        - run:
+            name: Install dependencies
+            command: |
+              apk add --update ansible curl rsync openssh nodejs npm
+              ansible --version
+              pip install awscli
+              aws --version
+        - run:
+            name: Deploy backend
+            command: |
+              cd backend
+              npm i
+              npm run build
+              cp package* ./dist
+              cd ..
+              # Zip the directory
+              tar -C backend -czvf artifact.tar.gz .
+              mkdir .circleci/ansible/roles/deploy/files
+              mv artifact.tar.gz .circleci/ansible/roles/deploy/files
+              cd .circleci/ansible
+              echo "Contents  of the inventory.txt file is -------"
+              cat inventory.txt
+              ansible-playbook -i inventory.txt deploy-backend.yml  
+        - destroy-environment
+        - revert-migrations
+
   smoke-test:
     docker:
       # Lightweight Docker image 
