@@ -364,7 +364,7 @@ jobs:
               #mkdir .circleci/ansible/roles/deploy/files
               #mv artifact.tar.gz .circleci/ansible/roles/deploy/files
               
-        -run: 
+        - run: 
             name: deploy backend
             command: |      
               cd .circleci/ansible
