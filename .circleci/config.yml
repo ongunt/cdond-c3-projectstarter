@@ -219,11 +219,10 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
-      #- attach_workspace:
-      #    at: .
+
       - add_ssh_keys:
           fingerprints: ["30:09:18:55:20:70:03:f7:93:71:6c:4b:38:52:8f:61"]                          
-          #fingerprints: ["33:e8:e6:2b:6f:ec:39:36:4d:3d:62:ce:2c:97:36:48"]
+
       - run:
           name: Install dependencies
           command: |
@@ -327,7 +326,7 @@ jobs:
             cd frontend
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
-       - run:
+      - run:
           name: build and deploy frontend 
           command: |
             # your code here
@@ -494,11 +493,7 @@ jobs:
  #           echo OldWorkflowID: "${OldWorkflowID}"
  #           echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
 #
- #           # Stack names
-  #          export STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --no-paginate --output text)
-   #         echo Stack names: "${STACKS[@]}"
-            
-            
+
             # delete the stacks
     #        if [[ "${CIRCLE_WORKFLOW_ID:0:7}" =~ "${OldWorkflowID}" ]]
      #       then
